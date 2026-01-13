@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Dict
-from models.ensemble_model import EnsembleForecaster
-from utils.feature_engineering import MarketData, FeatureVector, BacktestResults
+from ..models.ensemble_model import EnsembleForecaster
+from ..utils.feature_engineering import MarketData, FeatureVector, BacktestResults
 
 class Backtester:
     def __init__(self, optimize_hyperparams=True):
