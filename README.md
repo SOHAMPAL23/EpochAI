@@ -1,4 +1,4 @@
-# ModelQ - Multi-Modal Financial Forecasting Engine
+# EpochAI - Multi-Modal Financial Forecasting Engine
 
 Advanced AI-powered financial forecasting system with hyperparameter optimization and explainable AI.
 
