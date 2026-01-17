@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModelQ - Financial Forecasting Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .prediction-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .metrics-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .risk-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-refresh {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        .direction-up {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .direction-down {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .progress-bar-custom {
+            height: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="text-center mb-3">
+                    <i class="fas fa-chart-line me-3"></i>ModelQ Financial Forecasting Dashboard
+                </h1>
+                <p class="text-center text-muted">Multi-Modal AI-Powered Market Prediction System</p>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <button id="refreshBtn" class="btn btn-refresh">
+                    <i class="fas fa-sync-alt me-2"></i>Generate New Prediction
+                </button>
+                <div class="loading" id="loadingSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing market data...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Cards Row -->
+        <div class="row">
+            <!-- Prediction Card -->
+            <div class="col-md-4">
+                <div class="card prediction-card h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title"><i class="fas fa-compass me-2"></i>Prediction</h3>
+                        <div class="metric-value" id="direction">--</div>
+                        <div class="metric-label">Direction</div>
+                        <hr class="my-3 bg-white opacity-25">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="metric-value fs-4" id="expectedReturn">--%</div>
+                                <div class="metric-label">Expected Return</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-value fs-4" id="confidence">--%</div>
+                                <div class="metric-label">Confidence</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Card -->
+            <div class="col-md-4">
+                <div class="card metrics-card h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title"><i class="fas fa-percentage me-2"></i>Quantiles</h3>
+                        <div class="row mt-4">
+                            <div class="col-4">
+                                <div class="metric-value fs-5" id="p10">--%</div>
+                                <div class="metric-label">P10</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="metric-value fs-5" id="p50">--%</div>
+                                <div class="metric-label">P50</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="metric-value fs-5" id="p90">--%</div>
+                                <div class="metric-label">P90</div>
+                            </div>
+                        </div>
+                        <hr class="my-3 bg-white opacity-25">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="metric-value fs-4" id="regime">--</div>
+                                <div class="metric-label">Market Regime</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Card -->
+            <div class="col-md-4">
+                <div class="card risk-card h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title"><i class="fas fa-shield-alt me-2"></i>Risk Metrics</h3>
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <div class="metric-value fs-4" id="var95">--%</div>
+                                <div class="metric-label">VaR 95%</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-value fs-4" id="maxDrawdown">--%</div>
+                                <div class="metric-label">Max Drawdown</div>
+                            </div>
+                        </div>
+                        <hr class="my-3 bg-white opacity-25">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Confidence Level:</span>
+                                    <div class="progress flex-grow-1 mx-2" style="height: 10px;">
+                                        <div class="progress-bar progress-bar-custom bg-success" 
+                                             role="progressbar" id="confidenceBar" style="width: 0%"></div>
+                                    </div>
+                                    <span id="confidencePercent">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mt-4">
+            <!-- Price Chart -->
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <h4 class="mb-3"><i class="fas fa-chart-line me-2"></i>Price History</h4>
+                    <div id="priceChart" style="height: 400px;"></div>
+                </div>
+            </div>
+
+            <!-- Historical Performance -->
+            <div class="col-lg-4">
+                <div class="chart-container">
+                    <h4 class="mb-3"><i class="fas fa-history me-2"></i>Prediction Accuracy</h4>
+                    <div id="accuracyChart" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <p class="text-muted">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    This system uses synthetic data for demonstration purposes only. 
+                    Do not use for real trading without proper validation.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let priceData = [];
+        let accuracyData = [];
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPrediction();
+            loadHistoricalAccuracy();
+        });
+
+        // Refresh button event
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            loadPrediction();
+        });
+
+        // Load prediction data
+        async function loadPrediction() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            // Show loading
+            loadingSpinner.style.display = 'block';
+            refreshBtn.style.display = 'none';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Update UI with prediction data
+                updatePredictionUI(data.prediction);
+                updateCharts(data.chart_data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading prediction: ' + error.message);
+            } finally {
+                // Hide loading
+                loadingSpinner.style.display = 'none';
+                refreshBtn.style.display = 'inline-block';
+            }
+        }
+
+        // Load historical accuracy data
+        async function loadHistoricalAccuracy() {
+            try {
+                const response = await fetch('/historical');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                updateAccuracyChart(data);
+                
+            } catch (error) {
+                console.error('Error loading historical data:', error);
+            }
+        }
+
+        // Update prediction UI
+        function updatePredictionUI(prediction) {
+            // Direction
+            const directionElement = document.getElementById('direction');
+            directionElement.textContent = prediction.direction;
+            directionElement.className = prediction.direction === 'UP' ? 
+                'metric-value direction-up' : 'metric-value direction-down';
+            
+            // Other metrics
+            document.getElementById('expectedReturn').textContent = prediction.expected_return + '%';
+            document.getElementById('confidence').textContent = (prediction.confidence * 100).toFixed(1) + '%';
+            document.getElementById('p10').textContent = prediction.quantiles.p10 + '%';
+            document.getElementById('p50').textContent = prediction.quantiles.p50 + '%';
+            document.getElementById('p90').textContent = prediction.quantiles.p90 + '%';
+            document.getElementById('regime').textContent = prediction.regime;
+            document.getElementById('var95').textContent = prediction.risk_metrics.var95 + '%';
+            document.getElementById('maxDrawdown').textContent = prediction.risk_metrics.max_drawdown + '%';
+            
+            // Confidence bar
+            const confidencePercent = (prediction.confidence * 100).toFixed(1);
+            document.getElementById('confidenceBar').style.width = confidencePercent + '%';
+            document.getElementById('confidencePercent').textContent = confidencePercent + '%';
+        }
+
+        // Update charts
+        function updateCharts(chartData) {
+            // Price chart
+            const priceTrace = {
+                x: chartData.dates,
+                y: chartData.prices,
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#667eea', width: 3 },
+                fill: 'tonexty',
+                fillcolor: 'rgba(102, 126, 234, 0.1)'
+            };
+            
+            const priceLayout = {
+                title: 'Recent Price Movement',
+                showlegend: false,
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Price' },
+                margin: { t: 30, b: 40, l: 50, r: 30 }
+            };
+            
+            Plotly.newPlot('priceChart', [priceTrace], priceLayout);
+        }
+
+        // Update accuracy chart
+        function updateAccuracyChart(historicalData) {
+            if (historicalData.length === 0) return;
+            
+            // Calculate accuracy
+            const correctPredictions = historicalData.filter(p => p.correct).length;
+            const totalPredictions = historicalData.length;
+            const accuracy = (correctPredictions / totalPredictions * 100).toFixed(1);
+            
+            // Create gauge chart for accuracy
+            const accuracyTrace = {
+                type: 'indicator',
+                mode: 'gauge+number',
+                value: parseFloat(accuracy),
+                title: { text: 'Prediction Accuracy', font: { size: 16 } },
+                gauge: {
+                    axis: { range: [null, 100], tickwidth: 1, tickcolor: 'darkblue' },
+                    bar: { color: accuracy >= 60 ? '#28a745' : '#dc3545' },
+                    bgcolor: 'white',
+                    borderwidth: 2,
+                    bordercolor: 'gray',
+                    steps: [
+                        { range: [0, 50], color: '#ff6b6b' },
+                        { range: [50, 70], color: '#ffd93d' },
+                        { range: [70, 100], color: '#6bcf7f' }
+                    ],
+                    threshold: {
+                        line: { color: 'red', width: 4 },
+                        thickness: 0.75,
+                        value: 65
+                    }
+                }
+            };
+            
+            const accuracyLayout = {
+                width: 350,
+                height: 300,
+                margin: { t: 25, r: 25, l: 25, b: 25 }
+            };
+            
+            Plotly.newPlot('accuracyChart', [accuracyTrace], accuracyLayout);
+        }
+    </script>
+</body>
+</html>
