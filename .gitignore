@@ -1,13 +1,17 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+# Build / Distribution
 build/
-develop-eggs/
 dist/
 downloads/
+develop-eggs/
 eggs/
 .eggs/
 lib/
@@ -16,27 +20,74 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
+pip-wheel-metadata/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Virtual Environment
+# =========================
+# Virtual Environments
+# =========================
 venv/
 env/
 ENV/
 .venv/
-.env/
+env.bak/
+venv.bak/
 
-# IDE
+# Environment Files
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDE / Editors
+# =========================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
+Thumbs.db
+ehthumbs.db
 
-# Data
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Cache
+# =========================
+.cache/
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.tox/
+.nox/
+coverage/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+*.ipynb
+
+# =========================
+# Data Files
+# =========================
 *.csv
 *.xlsx
 *.xls
@@ -45,148 +96,97 @@ raw_data/
 processed_data/
 output/
 
-# Logs
-*.log
-logs/
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
-
+# =========================
 # Models
+# =========================
 *.pkl
 *.joblib
 saved_models/
 models/saved/
 
-# Environment specific
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Cache
-.cache/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-coverage.xml
-*.cover
-*.cache
-nosetests.xml
-coverage/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask
+# =========================
+# Flask / Django
+# =========================
 instance/
 .webassets-cache
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
 
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
+# =========================
+# Documentation
+# =========================
 docs/_build/
+site/
 
-# PyBuilder
-target/
+# =========================
+# Node.js
+# =========================
+node_modules/
+.next/
+out/
+build/
+dist/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Package Managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# IPython
-profile_default/
-ipython_config.py
+# =========================
+# Frontend Cache
+# =========================
+.next/cache/
+.parcel-cache/
+turbo/
+.vercel/
 
-# pyenv
-.python-version
+# =========================
+# Testing
+# =========================
+jest-coverage/
+cypress/videos/
+cypress/screenshots/
+playwright-report/
 
-# pipenv
-Pipfile.lock
+# =========================
+# Docker
+# =========================
+.docker/
+docker-compose.override.yml
 
-# PEP 582
-__pypackages__/
+# =========================
+# OS Files
+# =========================
+.Spotlight-V100
+.Trashes
+._*
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+# =========================
+# TypeScript
+# =========================
+*.tsbuildinfo
 
-# SageMath parsed files
-*.sage.py
+# =========================
+# Prisma
+# =========================
+prisma/dev.db
+prisma/dev.db-journal
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# =========================
+# Temporary Files
+# =========================
+tmp/
+temp/
+*.tmp
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# =========================
+# Security
+# =========================
+*.pem
+*.key
+*.crt
 
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre checker
-.pyre/
-
-# End of .gitignore
+# =========================
+# End
+# =========================
