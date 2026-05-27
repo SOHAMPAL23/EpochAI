@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EpochAI - Financial Intelligence Hub</title>
+    <!-- Google Fonts Outfit & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly JS -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-main: #08090b;
+            --panel-bg: rgba(13, 15, 20, 0.7);
+            --border-color: rgba(255, 255, 255, 0.04);
+            --accent-blue: #00d2ff;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-purple: #a855f7;
+            --accent-yellow: #f59e0b;
+            --text-main: #ffffff;
+            --text-muted: #83899a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .mono {
+            font-family: 'Fira Code', monospace !important;
+        }
+
+        /* Minimal Header */
+        header {
+            background-color: #08090b;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.9rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .brand {
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .brand i {
+            color: var(--accent-blue);
+            font-size: 0.95rem;
+            filter: drop-shadow(0 0 5px rgba(0, 210, 255, 0.6));
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.25rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            padding: 0.35rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .nav-item:hover {
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1.05rem;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-blue);
+            box-shadow: 0 0 8px var(--accent-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        /* Stats Strip */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--border-color);
+            background-color: #0c0d12;
+        }
+
+        .stat-item {
+            padding: 1.1rem 2.5rem;
+            border-right: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+        }
+
+        .stat-item:hover {
+            background-color: rgba(255, 255, 255, 0.005);
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-val {
+            font-size: 1.45rem;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+            letter-spacing: -0.5px;
+        }
+
+        /* Minimalist Panels */
+        .min-panel {
+            background-color: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 1.5rem;
+            height: 100%;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Main Workspace Container */
+        main {
+            padding: 2.25rem 2.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Inputs & Dropdowns - Styled like custom Bloomberg widgets */
+        .min-select {
+            background: #111318;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+            padding: 0.45rem 2rem 0.45rem 0.8rem;
+            border-radius: 3px;
+            outline: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%2383899a' d='M0 2l4 4 4-4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 8px 8px;
+        }
+
+        .min-select:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background-color: #14171d;
+        }
+
+        .min-select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.25);
+        }
+
+        .min-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            padding: 0.45rem 1.1rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            outline: none;
+        }
+
+        .min-btn:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .min-btn:active {
+            transform: scale(0.98);
+        }
+
+        .min-btn.primary {
+            background: rgba(0, 210, 255, 0.06);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .min-btn.primary:hover {
+            background: rgba(0, 210, 255, 0.12);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+
+        /* Shock console controls redesigned */
+        .shock-btn {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            padding: 0.5rem 0.9rem;
+            border-radius: 3px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .shock-btn:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Direction Indicators */
+        .dir-up {
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        .dir-down {
+            color: var(--accent-red);
+            font-weight: 700;
+        }
+
+        /* Pulse and Status Indicator */
+        .pulse-indicator {
+            display: flex;
+            align-items: center;
+            color: var(--accent-green);
+            font-size: 0.75rem;
+            font-weight: 600;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.04);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            padding: 0.25rem 0.7rem;
+            border-radius: 3px;
+        }
+
+        .pulse-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            70% { transform: scale(1.15); opacity: 0.4; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .toast-banner {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #0f1115;
+            border: 1px solid var(--border-color);
+            border-left: 2px solid var(--accent-blue);
+            padding: 0.8rem 1.4rem;
+            border-radius: 4px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            transform: translateY(150px);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .toast-banner.show {
+            transform: translateY(0);
+        }
+
+        .loading-cover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 9, 11, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 4px;
+        }
+
+        .spinner {
+            width: 28px;
+            height: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.04);
+            border-top: 2px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Custom high-end range input slider */
+        input[type=range].form-range {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            outline: none;
+        }
+
+        input[type=range].form-range::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #111317;
+            border-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        input[type=range].form-range::-webkit-slider-thumb {
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 0 8px var(--accent-blue);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        input[type=range].form-range::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 12px var(--accent-blue);
+        }
+
+        .regime-pill {
+            padding: 0.25rem 0.65rem;
+            border-radius: 3px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+        .rp-bull { background: rgba(16, 185, 129, 0.06); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .rp-bear { background: rgba(239, 68, 68, 0.06); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .rp-stable { background: rgba(0, 210, 255, 0.06); color: var(--accent-blue); border: 1px solid rgba(0, 210, 255, 0.2); }
+        .rp-volatile { background: rgba(168, 85, 247, 0.06); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.2); }
+
+        @media (max-width: 991px) {
+            header {
+                padding: 1rem 1.5rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stat-item {
+                padding: 1rem 1.5rem;
+            }
+            main {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Color utility class overrides mapping standard Bootstrap color highlights to neon carbon theme tokens */
+        .text-primary { color: var(--accent-blue) !important; }
+        .text-success { color: var(--accent-green) !important; }
+        .text-danger { color: var(--accent-red) !important; }
+        .text-warning { color: var(--accent-yellow) !important; }
+        .text-purple { color: var(--accent-purple) !important; }
+        .text-yellow { color: var(--accent-yellow) !important; }
+        .text-muted { color: var(--text-muted) !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Beautiful glassmorphic overlay loader when training models -->
+    <div id="fullScreenLoader" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 6, 8, 0.88); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; transition: all 0.3s ease; opacity: 0;">
+        <div class="text-center">
+            <div class="spinner-border text-info mb-4" role="status" style="width: 3.5rem; height: 3.5rem; border-width: 0.25em; filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.45));"></div>
+            <h2 class="fw-bold tracking-wide" id="loaderTitle" style="font-size: 1.45rem; color: #fff; letter-spacing: 1px;">CALIBRATING ENGINE</h2>
+            <p class="text-muted mt-2" id="loaderSubtitle" style="font-size: 0.85rem; font-family: 'Fira Code', monospace;">Training forecasting weights on Yahoo Finance stream...</p>
+        </div>
+    </div>
+
+    <!-- Minimalist Top Navigation Header -->
+    <header>
+        <div class="brand">
+            <i class="fas fa-terminal"></i>
+            <span id="brandLogoText">EPOCH AI</span>
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active" data-target="view-forecasting">Forecasts</li>
+            <li class="nav-item" data-target="view-simulator">Simulation Feed</li>
+            <li class="nav-item" data-target="view-risk">Risk Terminal</li>
+            <li class="nav-item" data-target="view-telemetry">Calibration Hub</li>
+        </ul>
+        <div class="header-actions">
+            <!-- Ticker Controller Panel -->
+            <div class="d-flex align-items-center gap-2" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); padding: 0.25rem 0.6rem; border-radius: 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);">
+                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.8px;">Asset:</span>
+                <select class="min-select" id="tickerSelector" style="padding: 0.15rem 1.6rem 0.15rem 0.4rem; font-size: 0.75rem; border: none; background-color: transparent; font-weight: 600; outline: none;">
+                    <option value="SYNTHETIC">Synthetic Market</option>
+                    <optgroup label="Stocks">
+                        <option value="AAPL">AAPL (Apple)</option>
+                        <option value="MSFT">MSFT (Microsoft)</option>
+                        <option value="SPY">SPY (S&P 500 ETF)</option>
+                        <option value="QQQ">QQQ (Nasdaq 100)</option>
+                        <option value="NVDA">NVDA (NVIDIA)</option>
+                        <option value="TSLA">TSLA (Tesla)</option>
+                    </optgroup>
+                    <optgroup label="Cryptocurrency">
+                        <option value="BTC-USD">BTC-USD (Bitcoin)</option>
+                        <option value="ETH-USD">ETH-USD (Ethereum)</option>
+                    </optgroup>
+                </select>
+                <!-- Custom Ticker Search Input -->
+                <div class="position-relative d-flex align-items-center" style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 0.5rem; gap: 0.25rem;">
+                    <input type="text" id="customTickerInput" placeholder="Custom..." style="background: transparent; border: none; outline: none; color: #fff; width: 65px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; padding: 0.15rem 0;">
+                    <button class="btn btn-sm p-0 text-muted" id="customTickerBtn" style="font-size: 0.75rem; transition: color 0.2s;" onmouseover="this.className='btn btn-sm p-0 text-white'" onmouseout="this.className='btn btn-sm p-0 text-muted'">
+                        <i class="fas fa-search" style="font-size: 0.7rem;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pulse-indicator">
+                <div class="pulse-dot"></div>
+                <span class="mono" id="systemClock">00:00:00</span>
+            </div>
+            <button class="min-btn py-1 px-2 text-muted" id="globalResetBtn" style="font-size: 0.75rem;">
+                <i class="fas fa-power-off" style="font-size: 0.7rem;"></i> Reset
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats Dashboard Strip -->
+    <div class="stats-row">
+        <div class="stat-item">
+            <div class="stat-label">Market Price</div>
+            <div class="stat-val mono text-primary" id="tickerPrice" style="color: var(--accent-blue) !important; filter: drop-shadow(0 0 2px rgba(0,210,255,0.15));">$100.00</div>
+            <div class="text-muted mt-1 small mono" id="tickerChange">+0.00 (0.00%)</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Model Target</div>
+            <div class="stat-val text-success" id="mainReturn" style="filter: drop-shadow(0 0 2px rgba(16,185,129,0.15));">+0.00%</div>
+            <div class="text-muted mt-1 small mono" id="mainDirection"><span class="dir-up">UP</span></div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Prediction Confidence</div>
+            <div class="stat-val text-warning" id="mainConfidence" style="filter: drop-shadow(0 0 2px rgba(245,158,11,0.15));">0.0%</div>
+            <div class="text-muted mt-1 small" id="confidenceSubtitle">Uncertain</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Active Predictor</div>
+            <div class="stat-val text-purple" id="mainPredictor" style="font-size: 1.25rem; padding-top: 0.15rem; color: var(--accent-purple) !important; filter: drop-shadow(0 0 2px rgba(168,85,247,0.15));">ADVANCED</div>
+            <div class="text-muted mt-1 small">Dynamic ML Engine</div>
+        </div>
+    </div>
+
+    <!-- Main Content Workspace -->
+    <main>
+        <!-- ==================== VIEW 1: FORECAST ENGINE ==================== -->
+        <div id="view-forecasting" class="view-section active">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="min-panel" style="height: 480px;">
+                        <div class="loading-cover" id="forecastLoader">
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold mb-0" style="font-size: 1.1rem; letter-spacing: 0.5px;">Quantile Return Variance</h3>
+                            <div class="d-flex align-items-center gap-2">
+                                <select class="min-select" id="forecastPredictorSelector">
+                                    <option value="advanced">Advanced Cost Predictor</option>
+                                    <option value="optimized">Optimized Cost Predictor</option>
+                                    <option value="ultimate">Ultimate Cost Predictor</option>
+                                    <option value="ensemble" selected>Ensemble Predictor</option>
+                                </select>
+                                <button class="min-btn py-1 px-2" id="triggerForecastBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="quantileFanChart" style="height: 360px; width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Minimalist Active Forecast details -->
+                    <div class="min-panel mb-4" style="height: 270px;">
+                        <h4 class="fw-semibold mb-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Active Forecast Projections</h4>
+                        <div class="text-center py-2">
+                            <div class="display-5 fw-bold mb-2 text-white" id="cardDirection">--</div>
+                            <span class="regime-pill rp-stable" id="cardRegime">STABLE</span>
+                        </div>
+                        <hr style="border-color: var(--border-color); margin: 1rem 0;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Expected 24h Return:</span>
+                            <span class="fw-bold mono text-success" id="cardReturn">+0.00%</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Calculated Speed:</span>
+                            <span class="fw-bold mono text-info" id="cardLatency">0.00 ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Confidence interval details -->
+                    <div class="min-panel" style="height: 186px;">
+                        <h4 class="fw-semibold mb-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Confidence Variance</h4>
+                        <div class="row text-center mt-3 g-2">
+                            <div class="col-4">
+                                <div class="h4 fw-bold text-danger mono" id="ciP10">0.0%</div>
+                                <span class="small text-muted">P10 (Risk)</span>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 fw-bold text-white mono" id="ciP50">0.0%</div>
+                                <span class="small text-muted">P50 (Median)</span>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 fw-bold text-success mono" id="ciP90">0.0%</div>
+                                <span class="small text-muted">P90 (Upside)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 2: LIVE SIMULATOR ==================== -->
+        <div id="view-simulator" class="view-section">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="min-panel" style="height: 480px;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold mb-0" style="font-size: 1.1rem; letter-spacing: 0.5px;">Live Price Action Streams</h3>
+                            <button class="min-btn py-1 px-2" id="simResetBtn" style="font-size: 0.8rem;"><i class="fas fa-rotate-left"></i> Reset Ticks</button>
+                        </div>
+                        <div id="priceTickChart" style="height: 360px; width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Regime status details -->
+                    <div class="min-panel mb-4" style="height: 250px;">
+                        <h4 class="fw-semibold mb-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Regime Diagnostics</h4>
+                        <div class="text-center py-2">
+                            <div class="h2 fw-bold text-primary mb-2" id="simRegime">STABLE</div>
+                            <span class="small text-muted">Updated via HMM probability distributions</span>
+                        </div>
+                        <hr style="border-color: var(--border-color); margin: 1rem 0;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Vol Shock Index:</span>
+                            <span class="fw-bold mono text-warning" id="simVolatility">2.00%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Trend Drift momentum:</span>
+                            <span class="fw-bold mono text-info" id="simTrend">+0.01%</span>
+                        </div>
+                    </div>
+
+                    <!-- Shock console -->
+                    <div class="min-panel" style="height: 206px;">
+                        <h4 class="fw-semibold mb-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Manual Volatility Shocks</h4>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button class="shock-btn" data-shock="news_positive">
+                                <i class="fas fa-bullhorn text-success me-1"></i> Positive News
+                            </button>
+                            <button class="shock-btn" data-shock="news_negative">
+                                <i class="fas fa-circle-down text-danger me-1"></i> Negative News
+                            </button>
+                            <button class="shock-btn" data-shock="volatility_spike">
+                                <i class="fas fa-triangle-exclamation text-warning me-1"></i> Vol Spike
+                            </button>
+                            <button class="shock-btn" data-shock="trend_bull">
+                                <i class="fas fa-arrow-trend-up text-info me-1"></i> Bull Drift
+                            </button>
+                            <button class="shock-btn" data-shock="trend_bear">
+                                <i class="fas fa-arrow-trend-down text-danger me-1"></i> Bear Drift
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 3: RISK ANALYTICS ==================== -->
+        <div id="view-risk" class="view-section">
+            <div class="row g-4">
+                <div class="col-lg-6 col-md-12">
+                    <div class="min-panel" style="height: 450px;">
+                        <h3 class="fw-bold mb-4" style="font-size: 1.1rem; letter-spacing: 0.5px;">Value at Risk (VaR 95%)</h3>
+                        <div id="varGaugeChart" style="height: 330px; width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <div class="min-panel" style="height: 450px;">
+                        <h3 class="fw-bold mb-4" style="font-size: 1.1rem; letter-spacing: 0.5px;">Kelly Criterion Sizing Optimizer</h3>
+                        <div class="row g-3 align-items-center mt-3">
+                            <div class="col-sm-5">
+                                <div class="text-center py-4 rounded" style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.05);">
+                                    <div class="text-muted small fw-semibold mb-1" style="font-size: 0.72rem; letter-spacing: 0.8px;">RECOMMENDED SIZE</div>
+                                    <div class="display-5 fw-bold text-success mono" id="kellyAllocation" style="filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.25));">0.0%</div>
+                                    <p class="text-muted mt-2 mb-0" style="font-size: 0.72rem; letter-spacing: 0.5px;">Optimal Capital Allocation</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 ps-sm-4">
+                                <div class="p-3 rounded mb-3" style="background: #111318; border: 1px solid rgba(255, 255, 255, 0.05);">
+                                    <label class="text-muted small fw-semibold mb-2" style="font-size: 0.72rem; letter-spacing: 0.8px;">MAXIMUM ALLOCATION LIMIT</label>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <input type="range" class="form-range flex-grow-1 me-3" id="kellyLimitSlider" min="5" max="50" step="5" value="15">
+                                        <span class="fw-bold mono fs-5 text-white" id="kellyLimitValue">15%</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Expected Volatility:</span>
+                                    <span class="fw-semibold text-warning mono" id="kellyVol">0.0%</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Max Drawdown target:</span>
+                                    <span class="fw-semibold text-danger mono" id="kellyDrawdown">0.0%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted small">Leverage Factor:</span>
+                                    <span class="fw-semibold text-info mono" id="kellyMultiplier">0.0x</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW 4: MODEL CALIBRATION ==================== -->
+        <div id="view-telemetry" class="view-section">
+            <div class="row g-4">
+                <div class="col-lg-6 col-md-12">
+                    <div class="min-panel" style="height: 480px;">
+                        <h3 class="fw-bold mb-4" style="font-size: 1.1rem; letter-spacing: 0.5px;">Comparative Speed Performance</h3>
+                        <div id="latencyBarChart" style="height: 360px; width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <!-- System telemetry logs -->
+                    <div class="min-panel mb-4" style="height: 228px;">
+                        <h3 class="fw-semibold mb-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">System Process Logs</h3>
+                        <div class="row mt-4 text-center g-2">
+                            <div class="col-4">
+                                <div class="h3 fw-bold text-info mono" id="telemetryLatency">0.00ms</div>
+                                <span class="text-muted small">Calc Delay</span>
+                            </div>
+                            <div class="col-4">
+                                <div class="h3 fw-bold text-warning mono" id="telemetryRAM">42.0MB</div>
+                                <span class="text-muted small">RAM Bound</span>
+                            </div>
+                            <div class="col-4">
+                                <div class="h3 fw-bold text-success mono" id="telemetryBuffer">0</div>
+                                <span class="text-muted small">Ticks Sync</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Forecast backtest metrics -->
+                    <div class="min-panel" style="height: 228px;">
+                        <h3 class="fw-semibold mb-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Historical Performance Accuracy</h3>
+                        <div class="row align-items-center mt-3 g-3">
+                            <div class="col-5">
+                                <div class="text-center py-3 rounded" style="background: rgba(245, 158, 11, 0.04); border: 1px solid rgba(245, 158, 11, 0.15); box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.05);">
+                                    <div class="display-6 fw-bold text-yellow mono" id="telemetryAccuracy" style="filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.25));">0.0%</div>
+                                    <span class="text-muted small" style="font-size: 0.75rem; letter-spacing: 0.5px;">Calculated Accuracy</span>
+                                </div>
+                            </div>
+                            <div class="col-7 ps-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Trials Tracked:</span>
+                                    <span class="fw-bold mono text-white">30</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Correct:</span>
+                                    <span class="fw-bold mono text-success" id="telemetryCorrect">0</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted small">Incorrect:</span>
+                                    <span class="fw-bold mono text-danger" id="telemetryIncorrect">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast Widget -->
+    <div class="toast-banner" id="globalToast">
+        <i class="fas fa-info-circle text-info"></i>
+        <span class="text-white" id="toastMessage">Console Sync Successful</span>
+    </div>
+
+    <!-- MAIN JAVASCRIPT AJAX CONTROLLER ROUTINES -->
+    <script>
+        // Declare Plotly globally so that any direct references do not throw ReferenceErrors!
+        var Plotly = window.Plotly || {
+            newPlot: function(divId, data, layout) {
+                const container = document.getElementById(divId);
+                if (!container) return;
+                container.innerHTML = '';
+                
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("width", "100%");
+                svg.setAttribute("height", "100%");
+                svg.setAttribute("viewBox", "0 0 500 300");
+                svg.style.overflow = "visible";
+                
+                if (divId === 'priceTickChart') {
+                    if (!data[0] || !data[0].y || data[0].y.length === 0) return;
+                    const ys = data[0].y;
+                    const minVal = Math.min(...ys);
+                    const maxVal = Math.max(...ys);
+                    const range = maxVal - minVal || 1;
+                    
+                    let points = [];
+                    for (let i = 0; i < ys.length; i++) {
+                        const x = (i / (ys.length - 1)) * 480 + 10;
+                        const y = 260 - ((ys[i] - minVal) / range) * 220;
+                        points.push(`${x},${y}`);
+                    }
+                    
+                    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                    polyline.setAttribute("points", points.join(" "));
+                    polyline.setAttribute("fill", "none");
+                    polyline.setAttribute("stroke", "#00d2ff");
+                    polyline.setAttribute("stroke-width", "2");
+                    svg.appendChild(polyline);
+                    
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", "10");
+                    text.setAttribute("y", "25");
+                    text.setAttribute("style", "font-family: 'Fira Code', monospace; fill: #83899a; font-size: 11px; font-weight: 600;");
+                    text.textContent = `High: $${maxVal.toFixed(2)}`;
+                    svg.appendChild(text);
+                    
+                    const text2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text2.setAttribute("x", "10");
+                    text2.setAttribute("y", "285");
+                    text2.setAttribute("style", "font-family: 'Fira Code', monospace; fill: #83899a; font-size: 11px; font-weight: 600;");
+                    text2.textContent = `Low: $${minVal.toFixed(2)}`;
+                    svg.appendChild(text2);
+                    
+                } else if (divId === 'quantileFanChart') {
+                    if (!data[0] || !data[0].y) return;
+                    const ys = data[0].y;
+                    const colors = ['#ef4444', '#00d2ff', '#10b981'];
+                    const labels = ['P10 (Risk)', 'P50 (Median)', 'P90 (Upside)'];
+                    
+                    for (let i = 0; i < ys.length; i++) {
+                        const barHeight = Math.min(180, Math.max(15, Math.abs(ys[i]) * 40));
+                        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                        rect.setAttribute("x", `${i * 150 + 60}`);
+                        rect.setAttribute("y", `${ys[i] >= 0 ? 140 - barHeight : 140}`);
+                        rect.setAttribute("width", "50");
+                        rect.setAttribute("height", `${barHeight}`);
+                        rect.setAttribute("fill", colors[i]);
+                        rect.setAttribute("rx", "3");
+                        svg.appendChild(rect);
+                        
+                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        text.setAttribute("x", `${i * 150 + 85}`);
+                        text.setAttribute("y", `${ys[i] >= 0 ? 130 - barHeight : 160 + barHeight}`);
+                        text.setAttribute("text-anchor", "middle");
+                        text.setAttribute("style", "font-family: 'Fira Code', monospace; fill: #ffffff; font-weight: 700; font-size: 11px;");
+                        text.textContent = `${ys[i].toFixed(3)}%`;
+                        svg.appendChild(text);
+                        
+                        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        label.setAttribute("x", `${i * 150 + 85}`);
+                        label.setAttribute("y", "260");
+                        label.setAttribute("text-anchor", "middle");
+                        label.setAttribute("style", "font-family: 'Outfit', sans-serif; fill: #83899a; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;");
+                        label.textContent = labels[i];
+                        svg.appendChild(label);
+                    }
+                    
+                } else if (divId === 'varGaugeChart') {
+                    const varVal = data[0].value;
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute("d", "M 120,200 A 130,130 0 0,1 380,200");
+                    path.setAttribute("fill", "none");
+                    path.setAttribute("stroke", "rgba(255,255,255,0.04)");
+                    path.setAttribute("stroke-width", "16");
+                    path.setAttribute("stroke-linecap", "round");
+                    svg.appendChild(path);
+                    
+                    const valText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    valText.setAttribute("x", "250");
+                    valText.setAttribute("y", "175");
+                    valText.setAttribute("text-anchor", "middle");
+                    valText.setAttribute("style", "font-family: 'Fira Code', monospace; fill: #ef4444; font-size: 40px; font-weight: 800;");
+                    valText.textContent = `${varVal.toFixed(3)}%`;
+                    svg.appendChild(valText);
+                    
+                    const subText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    subText.setAttribute("x", "250");
+                    subText.setAttribute("y", "225");
+                    subText.setAttribute("text-anchor", "middle");
+                    subText.setAttribute("style", "font-family: 'Outfit', sans-serif; fill: #83899a; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;");
+                    subText.textContent = "VaR 95% Risk Index (Offline)";
+                    svg.appendChild(subText);
+                    
+                } else if (divId === 'latencyBarChart') {
+                    const ys = data[0].y;
+                    const maxVal = Math.max(...ys) || 1;
+                    
+                    for (let i = 0; i < ys.length; i++) {
+                        const barWidth = (ys[i] / maxVal) * 200;
+                        
+                        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                        rect.setAttribute("x", "120");
+                        rect.setAttribute("y", `${i * 55 + 30}`);
+                        rect.setAttribute("width", `${barWidth}`);
+                        rect.setAttribute("height", "14");
+                        rect.setAttribute("fill", data[0].marker.color[i]);
+                        rect.setAttribute("rx", "2");
+                        svg.appendChild(rect);
+                        
+                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        text.setAttribute("x", "10");
+                        text.setAttribute("y", `${i * 55 + 42}`);
+                        text.setAttribute("style", "font-family: 'Outfit', sans-serif; fill: #83899a; font-size: 11px; font-weight: 600;");
+                        text.textContent = data[0].x[i];
+                        svg.appendChild(text);
+                        
+                        const valText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        valText.setAttribute("x", `${barWidth + 130}`);
+                        valText.setAttribute("y", `${i * 55 + 42}`);
+                        valText.setAttribute("style", "font-family: 'Fira Code', monospace; fill: #ffffff; font-size: 11px; font-weight: 700;");
+                        valText.textContent = `${ys[i].toFixed(2)} ms`;
+                        svg.appendChild(valText);
+                    }
+                }
+                
+                container.appendChild(svg);
+            }
+        };
+
+        // Tab routing dispatcher
+        const menuItems = document.querySelectorAll('.nav-item');
+        const viewSections = document.querySelectorAll('.view-section');
+        
+        let activePredictor = 'ensemble';
+        let latestPrediction = null;
+        let systemLatencyRecords = {
+            'ADVANCED': 10.5,
+            'OPTIMIZED': 4.2,
+            'ULTIMATE': 1.8,
+            'ENSEMBLE': 16.5
+        };
+
+        // States
+        let priceHistoryData = [];
+        
+        // Ticker selection management
+        const tickerSelector = document.getElementById('tickerSelector');
+        const customTickerInput = document.getElementById('customTickerInput');
+        const customTickerBtn = document.getElementById('customTickerBtn');
+        const fullScreenLoader = document.getElementById('fullScreenLoader');
+        const loaderTitle = document.getElementById('loaderTitle');
+        const loaderSubtitle = document.getElementById('loaderSubtitle');
+        const brandLogoText = document.getElementById('brandLogoText');
+
+        let currentActiveSymbol = 'SYNTHETIC';
+
+        async function handleTickerChange(symbol) {
+            if (!symbol) return;
+            
+            // Show full screen glassmorphic loader
+            fullScreenLoader.style.display = 'flex';
+            // Trigger reflow for transition
+            fullScreenLoader.offsetHeight;
+            fullScreenLoader.style.opacity = '1';
+            loaderTitle.textContent = symbol === 'SYNTHETIC' ? 'CALIBRATING SYNTHETIC ENGINE' : `CALIBRATING ${symbol} ENGINE`;
+            loaderSubtitle.textContent = symbol === 'SYNTHETIC' ? 'Regenerating synthetic assets...' : `Downloading ${symbol} and VIX indexes from Yahoo Finance...`;
+            
+            try {
+                const response = await fetch('/api/select-ticker', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to switch ticker');
+                }
+                
+                currentActiveSymbol = data.active_symbol;
+                
+                // Update brand display in navbar: "EPOCH AI // AAPL"
+                brandLogoText.innerHTML = `EPOCH AI <span style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 500; margin-left: 0.4rem; padding-left: 0.4rem; border-left: 1px solid rgba(255,255,255,0.15);">${currentActiveSymbol}</span>`;
+                
+                // Select value in dropdown (in case it was custom search)
+                let foundOption = false;
+                for (let i = 0; i < tickerSelector.options.length; i++) {
+                    if (tickerSelector.options[i].value === currentActiveSymbol) {
+                        tickerSelector.selectedIndex = i;
+                        foundOption = true;
+                        break;
+                    }
+                }
+                
+                // If custom symbol not present in select options, append it dynamically
+                if (!foundOption) {
+                    const optGroup = tickerSelector.querySelector('optgroup[label="Stocks"]');
+                    const newOption = document.createElement('option');
+                    newOption.value = currentActiveSymbol;
+                    newOption.textContent = `${currentActiveSymbol} (Custom)`;
+                    newOption.selected = true;
+                    optGroup.appendChild(newOption);
+                }
+                
+                // Clear input
+                customTickerInput.value = '';
+                
+                // Reset state & fetch new metrics
+                priceHistoryData = [];
+                fireToast(`Successfully loaded ${currentActiveSymbol} from Yahoo Finance!`);
+                
+                // Recalculate and re-poll all charts & telemetry
+                await fetchMarketData();
+                await fetchForecastingPrediction();
+                await fetchModelTelemetry();
+                await fetchHistoricalBacktesting();
+                
+            } catch (err) {
+                console.error("Failed to load ticker: ", err);
+                fireToast(err.message || "Failed to download requested asset", false);
+                
+                // Revert dropdown selection to currentActiveSymbol
+                for (let i = 0; i < tickerSelector.options.length; i++) {
+                    if (tickerSelector.options[i].value === currentActiveSymbol) {
+                        tickerSelector.selectedIndex = i;
+                        break;
+                    }
+                }
+            } finally {
+                // Fade out loader
+                fullScreenLoader.style.opacity = '0';
+                setTimeout(() => {
+                    fullScreenLoader.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        tickerSelector.addEventListener('change', (e) => {
+            handleTickerChange(e.target.value);
+        });
+
+        customTickerBtn.addEventListener('click', () => {
+            const sym = customTickerInput.value.trim().toUpperCase();
+            if (sym) {
+                handleTickerChange(sym);
+            } else {
+                fireToast("Please type a ticker symbol first.", false);
+            }
+        });
+
+        customTickerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const sym = customTickerInput.value.trim().toUpperCase();
+                if (sym) {
+                    handleTickerChange(sym);
+                } else {
+                    fireToast("Please type a ticker symbol first.", false);
+                }
+            }
+        });
+        
+        function fireToast(msg, isSuccess = true) {
+            const toast = document.getElementById('globalToast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = toast.querySelector('i');
+            
+            toastMsg.textContent = msg;
+            toastIcon.className = isSuccess ? 'fas fa-check-circle text-success fs-5' : 'fas fa-exclamation-circle text-danger fs-5';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                viewSections.forEach(vs => vs.classList.remove('active'));
+                
+                item.classList.add('active');
+                const target = item.getAttribute('data-target');
+                document.getElementById(target).classList.add('active');
+                
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 80);
+                
+                fireToast(`Switched view to ${item.textContent}`);
+            });
+        });
+
+        // Clock Update
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('systemClock').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 1. Fetch live market ticks
+        async function fetchMarketData() {
+            try {
+                const response = await fetch('/api/market-data');
+                const data = await response.json();
+                
+                // Update brand display & select dropdown on first fetch / state synchronization
+                if (data.active_symbol && currentActiveSymbol !== data.active_symbol) {
+                    currentActiveSymbol = data.active_symbol;
+                    brandLogoText.innerHTML = `EPOCH AI <span style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 500; margin-left: 0.4rem; padding-left: 0.4rem; border-left: 1px solid rgba(255,255,255,0.15);">${currentActiveSymbol}</span>`;
+                    
+                    let found = false;
+                    for (let i = 0; i < tickerSelector.options.length; i++) {
+                        if (tickerSelector.options[i].value === currentActiveSymbol) {
+                            tickerSelector.selectedIndex = i;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found && currentActiveSymbol !== 'SYNTHETIC') {
+                        const optGroup = tickerSelector.querySelector('optgroup[label="Stocks"]');
+                        const newOption = document.createElement('option');
+                        newOption.value = currentActiveSymbol;
+                        newOption.textContent = `${currentActiveSymbol} (Custom)`;
+                        newOption.selected = true;
+                        optGroup.appendChild(newOption);
+                    }
+                }
+                
+                const priceVal = data.price;
+                const oldPrice = priceHistoryData.length > 0 ? priceHistoryData[priceHistoryData.length-1].price : priceVal;
+                const priceDiff = priceVal - oldPrice;
+                const pricePct = (priceDiff / oldPrice) * 100.0;
+                
+                document.getElementById('tickerPrice').textContent = `$${priceVal.toFixed(2)}`;
+                
+                const tickerChangeEl = document.getElementById('tickerChange');
+                tickerChangeEl.textContent = `${priceDiff >= 0 ? '+' : ''}${priceDiff.toFixed(2)} (${priceDiff >= 0 ? '+' : ''}${pricePct.toFixed(2)}%)`;
+                tickerChangeEl.className = priceDiff >= 0 ? 'text-success mt-1 small font-semibold' : 'text-danger mt-1 small font-semibold';
+                
+                priceHistoryData = data.price_history;
+                
+                // Regime Status update
+                const simRegimeEl = document.getElementById('simRegime');
+                simRegimeEl.textContent = data.regime;
+                
+                let pillClass = 'regime-pill ';
+                if(data.regime.includes('Bull')) pillClass += 'rp-bull';
+                else if(data.regime.includes('Bear')) pillClass += 'rp-bear';
+                else if(data.regime.includes('Volatile')) pillClass += 'rp-volatile';
+                else pillClass += 'rp-stable';
+                
+                document.getElementById('cardRegime').className = pillClass;
+                document.getElementById('cardRegime').textContent = data.regime;
+                
+                document.getElementById('simVolatility').textContent = (data.volatility * 100).toFixed(2) + '%';
+                document.getElementById('simTrend').textContent = (data.trend * 100).toFixed(2) + '%';
+                
+                renderPriceTickChart();
+                
+            } catch(e) {
+                console.error("Market data poll failed: ", e);
+            }
+        }
+        setInterval(fetchMarketData, 1000);
+        fetchMarketData();
+
+        // 2. Fetch dynamic predictions
+        async function fetchForecastingPrediction() {
+            const loader = document.getElementById('forecastLoader');
+            loader.style.display = 'flex';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ predictor_type: activePredictor })
+                });
+                
+                const data = await response.json();
+                latestPrediction = data.prediction;
+                
+                document.getElementById('mainPredictor').textContent = data.predictor_type;
+                systemLatencyRecords[data.predictor_type] = data.latency_ms;
+                
+                const expectedRet = latestPrediction.expected_return;
+                const dir = latestPrediction.direction;
+                const confidenceVal = latestPrediction.confidence * 100;
+                
+                document.getElementById('mainReturn').textContent = (expectedRet >= 0 ? '+' : '') + expectedRet.toFixed(3) + '%';
+                document.getElementById('mainReturn').className = expectedRet >= 0 ? 'stat-val text-success' : 'stat-val text-danger';
+                
+                document.getElementById('mainDirection').innerHTML = dir === 'UP' ? '<span class="dir-up">UP</span>' : '<span class="dir-down">DOWN</span>';
+                
+                document.getElementById('mainConfidence').textContent = confidenceVal.toFixed(1) + '%';
+                const confidenceEl = document.getElementById('mainConfidence');
+                if (confidenceVal >= 75) {
+                    confidenceEl.className = 'stat-val text-success';
+                    document.getElementById('confidenceSubtitle').textContent = "Highly Confident";
+                } else if (confidenceVal >= 55) {
+                    confidenceEl.className = 'stat-val text-warning';
+                    document.getElementById('confidenceSubtitle').textContent = "Moderate Drift";
+                } else {
+                    confidenceEl.className = 'stat-val text-danger';
+                    document.getElementById('confidenceSubtitle').textContent = "High Volatility";
+                }
+                
+                // Forecast active card updates
+                document.getElementById('cardDirection').textContent = dir;
+                document.getElementById('cardDirection').className = dir === 'UP' ? 'display-5 fw-bold mb-2 text-success' : 'display-5 fw-bold mb-2 text-danger';
+                
+                document.getElementById('cardReturn').textContent = (expectedRet >= 0 ? '+' : '') + expectedRet.toFixed(3) + '%';
+                document.getElementById('cardReturn').className = expectedRet >= 0 ? 'fw-bold mono text-success' : 'fw-bold mono text-danger';
+                
+                document.getElementById('cardLatency').textContent = data.latency_ms.toFixed(2) + ' ms';
+                document.getElementById('telemetryLatency').textContent = data.latency_ms.toFixed(2) + 'ms';
+                
+                // Quantiles updates
+                const p10 = latestPrediction.quantiles.p10;
+                const p50 = latestPrediction.quantiles.p50;
+                const p90 = latestPrediction.quantiles.p90;
+                
+                document.getElementById('ciP10').textContent = p10.toFixed(2) + '%';
+                document.getElementById('ciP50').textContent = p50.toFixed(2) + '%';
+                document.getElementById('ciP90').textContent = p90.toFixed(2) + '%';
+                
+                renderQuantileFanChart(p10, p50, p90);
+                renderVaRGauge(latestPrediction.risk_metrics.var95);
+                renderKellyCalculator(expectedRet, latestPrediction.risk_metrics.var95, latestPrediction.risk_metrics.max_drawdown);
+                
+                renderLatencyComparativeChart();
+                
+            } catch(e) {
+                console.error("Predict API fetch failed: ", e);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+        setInterval(fetchForecastingPrediction, 4000);
+
+        document.getElementById('triggerForecastBtn').addEventListener('click', () => {
+            fetchForecastingPrediction();
+            fireToast("Recalculated active forecast matrix.");
+        });
+
+        document.getElementById('forecastPredictorSelector').addEventListener('change', (e) => {
+            activePredictor = e.target.value;
+            fetchForecastingPrediction();
+            fetchModelTelemetry();
+            fetchHistoricalBacktesting();
+            fireToast(`Switched predictor target to ${activePredictor.toUpperCase()}`);
+        });
+
+        // 3. System RAM and buffers
+        async function fetchModelTelemetry() {
+            try {
+                const response = await fetch(`/model-info?predictor_type=${activePredictor}`);
+                const data = await response.json();
+                
+                document.getElementById('telemetryRAM').textContent = data.system_telemetry.memory_usage_mb.toFixed(1) + ' MB';
+                document.getElementById('telemetryBuffer').textContent = data.system_telemetry.sample_buffer_size;
+                
+            } catch(e) {
+                console.error("Telemetry query failed: ", e);
+            }
+        }
+        setInterval(fetchModelTelemetry, 5000);
+        fetchModelTelemetry();
+
+        // 4. Backtesting trials accuracy
+        async function fetchHistoricalBacktesting() {
+            try {
+                const response = await fetch(`/api/backtest?predictor_type=${activePredictor}`);
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    const correctCount = data.filter(d => d.correct).length;
+                    const incorrectCount = data.length - correctCount;
+                    const accuracyPct = (correctCount / data.length) * 100.0;
+                    
+                    document.getElementById('telemetryAccuracy').textContent = accuracyPct.toFixed(1) + '%';
+                    document.getElementById('telemetryCorrect').textContent = correctCount;
+                    document.getElementById('telemetryIncorrect').textContent = incorrectCount;
+                }
+            } catch(e) {
+                console.error("Backtesting index check failed: ", e);
+            }
+        }
+        setInterval(fetchHistoricalBacktesting, 8000);
+        fetchHistoricalBacktesting();
+
+        // 5. Apply Volatility/Trend shocks
+        const shockBtns = document.querySelectorAll('.shock-btn[data-shock]');
+        shockBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const shockType = btn.getAttribute('data-shock');
+                try {
+                    const response = await fetch('/api/shock', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ shock_type: shockType })
+                    });
+                    await response.json();
+                    fireToast(`Injected Shock Wave: ${shockType.replace('_', ' ').toUpperCase()}`);
+                    setTimeout(fetchForecastingPrediction, 500);
+                } catch(e) {
+                    fireToast("Failed to apply shock waveform", false);
+                }
+            });
+        });
+
+        // 6. Reset action triggers
+        const resetAction = async () => {
+            try {
+                await fetch('/api/reset', { method: 'POST' });
+                priceHistoryData = [];
+                fireToast("Cleared all tick datasets and weights.");
+                fetchMarketData();
+                fetchForecastingPrediction();
+                fetchModelTelemetry();
+                fetchHistoricalBacktesting();
+            } catch(e) {
+                fireToast("Reset call failed", false);
+            }
+        };
+
+        document.getElementById('simResetBtn').addEventListener('click', resetAction);
+        document.getElementById('globalResetBtn').addEventListener('click', resetAction);
+
+        // ==================== VISUALIZATION CHARTS GENERATION ROUTINES ====================
+        
+        const plotlyDarkTheme = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff', family: 'Outfit, sans-serif' },
+            xaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(255,255,255,0.015)',
+                zeroline: false,
+                tickfont: { color: '#83899a', family: 'Fira Code, monospace', size: 9 }
+            },
+            yaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(255,255,255,0.015)',
+                zeroline: false,
+                tickfont: { color: '#83899a', family: 'Fira Code, monospace', size: 9 }
+            }
+        };
+
+        function renderPriceTickChart() {
+            if (priceHistoryData.length === 0) return;
+            const times = priceHistoryData.map(d => d.timestamp);
+            const prices = priceHistoryData.map(d => d.price);
+            
+            if (typeof Plotly !== 'undefined' && typeof Plotly.newPlot === 'function' && !Plotly.newPlot.toString().includes('createElementNS')) {
+                const tracePrice = {
+                    x: times,
+                    y: prices,
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#00d2ff', width: 2 },
+                    fill: 'tonexty',
+                    fillcolor: 'rgba(0, 210, 255, 0.02)'
+                };
+                const layout = {
+                    ...plotlyDarkTheme,
+                    margin: { t: 15, b: 30, l: 45, r: 15 },
+                    showlegend: false
+                };
+                Plotly.newPlot('priceTickChart', [tracePrice], layout, { displayModeBar: false, responsive: true });
+            } else {
+                Plotly.newPlot('priceTickChart', [{ y: prices }], {});
+            }
+        }
+
+        function renderQuantileFanChart(p10, p50, p90) {
+            const categories = ['P10 (Risk)', 'P50 (Median)', 'P90 (Upside)'];
+            const values = [p10, p50, p90];
+            
+            if (typeof Plotly !== 'undefined' && typeof Plotly.newPlot === 'function' && !Plotly.newPlot.toString().includes('createElementNS')) {
+                const trace = {
+                    x: categories,
+                    y: values,
+                    type: 'bar',
+                    marker: { color: ['#ef4444', '#00d2ff', '#10b981'] },
+                    width: 0.35
+                };
+                const layout = {
+                    ...plotlyDarkTheme,
+                    margin: { t: 30, b: 30, l: 45, r: 15 },
+                    title: { text: 'Variance distribution bounds', font: { size: 11, color: '#83899a', family: 'Outfit, sans-serif' } }
+                };
+                Plotly.newPlot('quantileFanChart', [trace], layout, { displayModeBar: false, responsive: true });
+            } else {
+                Plotly.newPlot('quantileFanChart', [{ y: values }], {});
+            }
+        }
+
+        function renderVaRGauge(var95) {
+            const gaugeValue = Math.min(10, Math.max(0, Math.abs(var95)));
+            
+            if (typeof Plotly !== 'undefined' && typeof Plotly.newPlot === 'function' && !Plotly.newPlot.toString().includes('createElementNS')) {
+                const trace = {
+                    type: "indicator",
+                    mode: "gauge+number",
+                    value: gaugeValue,
+                    title: { text: "95% Risk Index", font: { size: 11, color: '#83899a', family: 'Outfit, sans-serif' } },
+                    number: { suffix: "%", font: { size: 34, color: '#ef4444', family: 'Fira Code, monospace' } },
+                    gauge: {
+                        axis: { range: [0, 10], tickwidth: 1, tickcolor: "rgba(255,255,255,0.08)", tickfont: { family: 'Fira Code, monospace', size: 9 } },
+                        bar: { color: "#ef4444" },
+                        bgcolor: "rgba(255,255,255,0.01)",
+                        steps: [
+                            { range: [0, 3.5], color: "rgba(16, 185, 129, 0.03)" },
+                            { range: [3.5, 6.5], color: "rgba(245, 158, 11, 0.03)" },
+                            { range: [6.5, 10], color: "rgba(239, 68, 68, 0.03)" }
+                        ]
+                    }
+                };
+                const layout = {
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    font: { color: '#ffffff', family: 'Outfit, sans-serif' },
+                    margin: { t: 40, b: 20, l: 30, r: 30 },
+                    height: 290
+                };
+                Plotly.newPlot('varGaugeChart', [trace], layout, { displayModeBar: false, responsive: true });
+            } else {
+                Plotly.newPlot('varGaugeChart', [{ value: gaugeValue }], {});
+            }
+        }
+
+        function renderLatencyComparativeChart() {
+            const models = ['ADVANCED', 'OPTIMIZED', 'ULTIMATE', 'ENSEMBLE'];
+            const latencies = models.map(m => systemLatencyRecords[m]);
+            const colors = models.map(m => m === activePredictor.toUpperCase() ? '#10b981' : 'rgba(0, 210, 255, 0.12)');
+            
+            if (typeof Plotly !== 'undefined' && typeof Plotly.newPlot === 'function' && !Plotly.newPlot.toString().includes('createElementNS')) {
+                const trace = {
+                    x: models,
+                    y: latencies,
+                    type: 'bar',
+                    marker: { color: colors },
+                    width: 0.4
+                };
+                const layout = {
+                    ...plotlyDarkTheme,
+                    margin: { t: 30, b: 30, l: 45, r: 15 },
+                    yaxis: { ...plotlyDarkTheme.yaxis, title: 'ms' }
+                };
+                Plotly.newPlot('latencyBarChart', [trace], layout, { displayModeBar: false, responsive: true });
+            } else {
+                Plotly.newPlot('latencyBarChart', [{ x: models, y: latencies, marker: { color: colors } }], {});
+            }
+        }
+
+        function renderKellyCalculator(expectedRet, var95, maxDrawdown) {
+            const slider = document.getElementById('kellyLimitSlider');
+            const sliderVal = document.getElementById('kellyLimitValue');
+            
+            const updateCalculation = () => {
+                const limitPct = parseFloat(slider.value) / 100.0;
+                sliderVal.textContent = slider.value + '%';
+                
+                const p = latestPrediction ? latestPrediction.confidence : 0.60;
+                const q = 1.0 - p;
+                const R = Math.max(0.1, Math.abs(expectedRet) / Math.max(0.1, Math.abs(var95)));
+                
+                let kellyAlloc = 0.0;
+                if (R > 0) {
+                    kellyAlloc = p - (q / R);
+                }
+                kellyAlloc = Math.max(0.0, Math.min(limitPct, kellyAlloc));
+                
+                document.getElementById('kellyAllocation').textContent = (kellyAlloc * 100.0).toFixed(1) + '%';
+                document.getElementById('kellyVol').textContent = Math.abs(var95).toFixed(2) + '%';
+                document.getElementById('kellyDrawdown').textContent = maxDrawdown.toFixed(2) + '%';
+                document.getElementById('kellyMultiplier').textContent = (kellyAlloc / 0.1).toFixed(1) + 'x';
+            };
+            
+            slider.replaceWith(slider.cloneNode(true));
+            const newSlider = document.getElementById('kellyLimitSlider');
+            newSlider.addEventListener('input', updateCalculation);
+            updateCalculation();
+        }
+
+        setTimeout(() => {
+            fetchForecastingPrediction();
+            fetchModelTelemetry();
+            fetchHistoricalBacktesting();
+        }, 100);
+    </script>
+</body>
+</html>
